@@ -46,14 +46,16 @@ $OutDir = (Resolve-Path $OutDir).Path
 # --- Find the packs --------------------------------------------------------
 
 $skip = '\\(\.git|\.vs|\.vscode|node_modules|dist)(\\|$)'
-$packs = Get-ChildItem $Repo -Recurse -Filter "manifest.json" -File |
+# Repo files that never belong inside a pack (matters when the pack IS the repo root).
+$skipFiles = '^(\.gitignore|\.gitattributes|.*\.md|.*\.mcaddon|.*\.mcpack)$'
+$packs = @(Get-ChildItem $Repo -Recurse -Filter "manifest.json" -File |
   Where-Object { $_.DirectoryName -notmatch $skip } |
   ForEach-Object {
     [pscustomobject]@{
       Dir      = $_.DirectoryName
       Manifest = Get-Content $_.FullName -Raw | ConvertFrom-Json
     }
-  }
+  })
 if (-not $packs) { throw "No packs (folders with manifest.json) found in $Repo." }
 
 # Use the behavior pack (data/script module) for the add-on's name and version.
@@ -61,14 +63,31 @@ $main = $packs | Where-Object { $_.Manifest.modules.type -contains "data" -or $_
   Select-Object -First 1
 if (-not $main) { $main = $packs | Select-Object -First 1 }
 
-function Get-CleanName([string]$name) {
-  $name = $name -replace '§.', ''            # color/format codes like §b§l
-  $name = $name -replace '\[[^\]]*\]', ''    # version tags like [1.0.2]
-  $name = ($name.Trim() -replace '[\\/:*?"<>|]', '') -replace '\s+', '-'
+# A manifest can name the pack with a language key such as "pack.name" and put
+# the real name in texts/en_US.lang. Look it up when that's the case.
+function Get-PackName($pack) {
+  $name = [string]$pack.Manifest.header.name
+  if ($name -notmatch '^[\w.]+$' -or $name -notmatch '\.') { return $name }
+  $lang = Join-Path $pack.Dir "texts\en_US.lang"
+  if (Test-Path $lang) {
+    $line = Get-Content $lang | Where-Object { $_ -like "$name=*" } | Select-Object -First 1
+    if ($line) { return $line.Substring($name.Length + 1).Trim() }
+  }
   return $name
 }
 
-$name    = Get-CleanName $main.Manifest.header.name
+function Get-CleanName([string]$name) {
+  $name = $name -replace '§.', ''                                       # color/format codes like §b§l
+  $name = $name -replace '\[[^\]]*\]', ''                               # tags like [1.0.2]
+  $name = $name -replace '\([^)]*(\d|Behaviou?r|Resource)[^)]*\)', ''   # (v1.8.30), (Behavior)
+  $name = $name -replace '\bv?\d+(\.\d+){1,3}\b', ''                    # versions like v1.1.2
+  $name = $name -replace '[\s\-:]*\b(Behaviou?r|Resource)s?(\s+Pack)?\s*$', ''  # "- Behavior Pack"
+  $name = $name -replace '[\s\-:]*\b(BP|RP)\s*$', ''                    # "- BP"
+  $name = ($name.Trim(' ', '-', ':') -replace '[\\/:*?"<>|]', '') -replace '\s+', '-'
+  return $name
+}
+
+$name    = Get-CleanName (Get-PackName $main)
 $version = $main.Manifest.header.version -join "."
 
 # --- Zip helper -------------------------------------------------------------
@@ -87,7 +106,9 @@ function New-PackArchive {
   try {
     foreach ($prefix in $Sources.Keys) {
       $folder = $Sources[$prefix]
-      foreach ($file in Get-ChildItem $folder -Recurse -File) {
+      $files = Get-ChildItem $folder -Recurse -File |
+        Where-Object { $_.FullName.Substring($folder.Length) -notmatch $skip -and $_.Name -notmatch $skipFiles }
+      foreach ($file in $files) {
         $relative = $file.FullName.Substring($folder.Length + 1) -replace "\\", "/"
         $entry = if ($prefix) { "$prefix/$relative" } else { $relative }
         [IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zip, $file.FullName, $entry) | Out-Null
@@ -111,7 +132,7 @@ New-PackArchive -Sources $all -OutName "$name-$version.mcaddon"
 # .mcpack: the pack's CONTENTS sit at the root of the zip (manifest.json at top level).
 if ($PerPack) {
   foreach ($p in $packs) {
-    $packName = Get-CleanName $p.Manifest.header.name
+    $packName = Get-CleanName (Get-PackName $p)
     $packVersion = $p.Manifest.header.version -join "."
     $kind = if ($p.Manifest.modules.type -contains "resources") { "RP" } else { "BP" }
     New-PackArchive -Sources @{ "" = $p.Dir } -OutName "$packName-$kind-$packVersion.mcpack"
