@@ -4,7 +4,7 @@
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 
 # Folders and files that are never part of a pack.
-$script:SkipDirs  = '[\\/](\.git|\.vs|\.vscode|\.github|node_modules|dist|builds)([\\/]|$)'
+$script:SkipDirs  = '[\\/](\.git|\.vs|\.vscode|\.github|node_modules|dist|builds|promo)([\\/]|$)'
 $script:SkipFiles = '^(\.gitignore|\.gitattributes|.*\.md|.*\.mcaddon|.*\.mcpack)$'
 # Text files Minecraft reads, which must be UTF-8.
 $script:TextExtensions = @('.json', '.lang', '.mcfunction', '.js', '.txt', '.material')
