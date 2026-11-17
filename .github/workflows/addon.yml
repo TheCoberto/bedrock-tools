@@ -1,0 +1,51 @@
+# Shared GitHub Actions workflow for TheCoberto's Bedrock add-ons.
+#
+# Each add-on repo calls this from its own .github/workflows/addon.yml (a copy
+# of templates/addon-ci.yml). On every push and pull request it checks the
+# add-on and builds it; on a published release it also attaches the .mcaddon
+# to the release so it can be downloaded from GitHub.
+
+name: Add-on check and build
+
+on:
+  workflow_call:
+
+jobs:
+  check-and-build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # needed to attach the .mcaddon to a release
+    steps:
+      - name: Get the add-on
+        uses: actions/checkout@v4
+        with:
+          path: addon
+
+      - name: Get bedrock-tools
+        uses: actions/checkout@v4
+        with:
+          repository: TheCoberto/bedrock-tools
+          path: bedrock-tools
+          # Only needed while bedrock-tools is private: a token with read access to it.
+          token: ${{ secrets.BEDROCK_TOOLS_TOKEN || github.token }}
+
+      - name: Check
+        shell: pwsh
+        run: ./bedrock-tools/check.ps1 -Repo addon
+
+      - name: Build
+        shell: pwsh
+        run: ./bedrock-tools/package.ps1 -Repo addon -OutDir builds -SkipCheck
+
+      - name: Save the build
+        uses: actions/upload-artifact@v4
+        with:
+          name: mcaddon
+          path: builds/*.mcaddon
+
+      - name: Attach to the release
+        if: github.event_name == 'release'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "${{ github.event.release.tag_name }}" builds/*.mcaddon --clobber --repo "${{ github.repository }}"
