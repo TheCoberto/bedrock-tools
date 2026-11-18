@@ -18,6 +18,7 @@ In VS Code, open `C:\Repos\VS Code Workspaces\minecraft-bedrock-mod-suite.code-w
 | `check.ps1` | Finds mistakes before they reach Minecraft |
 | `package.ps1` | Checks an add-on, then builds its `.mcaddon` |
 | `build-all.ps1` | Checks and builds every add-on at once |
+| `install.ps1` | Installs everything in `builds` into Minecraft on this PC |
 | `bump.ps1` | Updates an add-on's version everywhere |
 | `sync.ps1` | Copies shared files from another add-on (Skeleton Variants → Bow Variants) |
 | `install-ci.ps1` | Adds the GitHub Actions workflow to add-on repos |
@@ -67,6 +68,27 @@ Why not zip by hand:
 
 Checks every add-on, then builds each one into `builds\`. An add-on with errors is skipped and listed at the end; the rest still build.
 
+## install.ps1
+
+```powershell
+.\install.ps1           # from bedrock-tools
+.\install.ps1 -WhatIf   # show what would change
+.\install.ps1 -Force    # install even while Minecraft is running
+```
+
+Installs every add-on in `builds\` into Minecraft Bedrock on this PC, like double-clicking each `.mcaddon` but without the mess:
+
+- Each pack **replaces** the installed pack with the same UUID, in the same folder, instead of being added next to it. New packs go into `development_behavior_packs` and `development_resource_packs`.
+- Packs that already match the build are left alone. Line endings don't count, so a GitHub build and a local build of the same code match.
+- If `builds\` holds several versions of an add-on, only the newest is installed.
+- Every replaced or removed pack is backed up to `pack-backups\<date>` next to the repos.
+- Packs listed in `retired.json` are removed. List an add-on there when another one replaces it (Explosive Arrow → Bow Variants). Add both its BP and RP UUIDs.
+- Packs that aren't in `builds\` or `retired.json` are never touched.
+
+Close Minecraft first: it only reads packs when it starts, so the script stops if it's running (unless you pass `-Force`). It finds Minecraft's `com.mojang` folder itself, for both the current Windows version (`%APPDATA%\Minecraft Bedrock\Users\Shared\games`) and the older Microsoft Store one; pass `-MinecraftDir` to use another.
+
+Worlds that use an older version of an updated pack pick up the new one, because Minecraft matches packs by UUID.
+
 ## bump.ps1
 
 ```powershell
@@ -108,6 +130,8 @@ To release an add-on:
 # add a changelog entry, commit, push
 gh release create v1.2.0 --generate-notes
 ```
+
+Then download the release's `.mcaddon` into `builds\` (or run `build-all.ps1`) and run `install.ps1` to play it.
 
 The workflow downloads this repo while it runs, so bedrock-tools must be **public**, or each add-on repo needs a `BEDROCK_TOOLS_TOKEN` secret with read access to it.
 
