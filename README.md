@@ -19,6 +19,8 @@ In VS Code, open `C:\Repos\VS Code Workspaces\minecraft-bedrock-mod-suite.code-w
 | `package.ps1` | Checks an add-on, then builds its `.mcaddon` |
 | `build-all.ps1` | Checks and builds every add-on at once |
 | `install.ps1` | Installs everything in `builds` into Minecraft on this PC |
+| `status.ps1` | One table of what still needs doing across every add-on |
+| `release.ps1` | Releases an add-on start to finish: bump, PR, merge, release, build, install |
 | `bump.ps1` | Updates an add-on's version everywhere |
 | `sync.ps1` | Copies shared files from another add-on (Skeleton Variants → Bow Variants) |
 | `install-ci.ps1` | Adds the GitHub Actions workflow to add-on repos |
@@ -89,6 +91,33 @@ Close Minecraft first: it only reads packs when it starts, so the script stops i
 
 Worlds that use an older version of an updated pack pick up the new one, because Minecraft matches packs by UUID.
 
+## status.ps1
+
+```powershell
+.\status.ps1            # from bedrock-tools
+.\status.ps1 -NoFetch   # skip fetching from GitHub (faster)
+```
+
+One row per repo: uncommitted or unpushed work, open PRs, the latest release, pack changes since that release, and whether `builds\` has the current version. Then whether Minecraft has everything in `builds\` installed. Promo images, READMEs and workflow files don't count as changes. Exits with code 1 when something needs doing.
+
+## release.ps1
+
+```powershell
+.\release.ps1 -Repo fat-man -Part minor -Notes "- Adds launcher sounds."
+.\release.ps1 -Repo fat-man -Part minor -Notes "..." -WhatIf   # show the plan only
+.\release.ps1 -Repo fat-man -NoBump -Notes "..."               # release the version already in the manifests
+```
+
+Commit and merge the change first; this does the rest:
+
+1. Checks the repo is on its default branch, clean, and pushed, and pulls.
+2. Bumps the version on a `release-<version>` branch, opens a PR, waits for the checks and merges it.
+3. Creates the GitHub release `v<version>`, titled `<Add-on name> <version>`.
+4. Waits for the release build, downloads the `.mcaddon` into `builds\` and removes older versions of that add-on.
+5. Runs `install.ps1`, unless Minecraft is running or you pass `-NoInstall`.
+
+`-CommitTrailer` and `-PrFooter` add lines to the end of the bump commit and PR description.
+
 ## bump.ps1
 
 ```powershell
@@ -123,15 +152,17 @@ Every add-on repo has `.github/workflows/addon.yml`, which calls the shared work
 - **Every push and pull request:** runs the check and builds the add-on. The `.mcaddon` is saved with the run (Actions tab → the run → Artifacts).
 - **Every published release:** also attaches the `.mcaddon` to the release.
 
-To release an add-on:
+To release an add-on, use `release.ps1` (above). It bumps the version, creates the release, and puts the build in `builds\` and in Minecraft.
 
-```powershell
-..\bedrock-tools\bump.ps1 -Part minor
-# add a changelog entry, commit, push
-gh release create v1.2.0 --generate-notes
-```
+## Working with Claude Code
 
-Then download the release's `.mcaddon` into `builds\` (or run `build-all.ps1`) and run `install.ps1` to play it.
+Start Claude Code in this folder. `CLAUDE.md` holds the suite's conventions, and `.claude/skills/` adds three commands:
+
+| Command | What it does |
+| --- | --- |
+| `/suite-status` | Runs `status.ps1` and lists only what needs doing |
+| `/release-addon <repo> [patch\|minor\|major]` | Writes release notes and runs `release.ps1` |
+| `/install-addons` | Runs `install.ps1` after checking Minecraft is closed |
 
 The workflow downloads this repo while it runs, so bedrock-tools must be **public**, or each add-on repo needs a `BEDROCK_TOOLS_TOKEN` secret with read access to it.
 
