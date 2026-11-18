@@ -19,6 +19,7 @@ In VS Code, open `C:\Repos\VS Code Workspaces\minecraft-bedrock-mod-suite.code-w
 | `package.ps1` | Checks an add-on, then builds its `.mcaddon` |
 | `build-all.ps1` | Checks and builds every add-on at once |
 | `bump.ps1` | Updates an add-on's version everywhere |
+| `sync.ps1` | Copies shared files from another add-on (Skeleton Variants → Bow Variants) |
 | `install-ci.ps1` | Adds the GitHub Actions workflow to add-on repos |
 
 From a terminal, run them with `powershell -ExecutionPolicy Bypass -File <script>`. Paths below are from inside an add-on repo.
@@ -77,6 +78,21 @@ Checks every add-on, then builds each one into `builds\`. An add-on with errors 
 ```
 
 Sets the new version in every pack of the add-on: `header.version`, module versions, dependencies on the add-on's own packs, the version in the pack name (`[1.1.0]` or `v1.1.0`), and `pack.name` in `texts/*.lang`. Everything else in the files, including formatting, stays as it was. All packs in the add-on move to the new version. Add a changelog entry afterwards.
+
+## sync.ps1
+
+```powershell
+..\bedrock-tools\sync.ps1           # copy shared files into the add-on you're in
+..\bedrock-tools\sync.ps1 -Check    # only report differences; exits 1 if out of sync
+```
+
+For add-ons that share content with another one. Edit the shared files in the **source** add-on, then sync. The add-on that receives them lists what's shared in a `sync.json` at its root (see `bow-variants/sync.json`):
+
+- `files`: copied whole. `*` and `?` in the file name match several files.
+- `json`: copies only the listed keys of one object (like `texture_data` in `item_texture.json`). The add-on's other keys are left alone.
+- `lang`: copies only the listed `key=value` lines.
+
+It only rewrites a JSON file when a value differs, and line-ending differences don't count as changes. A missing source file or key is an error, so renames in the source don't go unnoticed. The source repo isn't available in GitHub Actions, so this runs locally only.
 
 ## GitHub Actions
 
