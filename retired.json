@@ -1,0 +1,8 @@
+{
+  // Packs that install.ps1 removes from Minecraft, because another add-on replaced them.
+  // Matched by header UUID. Add both the BP and the RP.
+  "packs": [
+    { "uuid": "a64109c4-5cc5-4dba-9cff-010643bed7d3", "reason": "Explosive Arrow BP, replaced by Bow Variants" },
+    { "uuid": "fa8b77ef-366a-4343-a0a6-0c4da898c31d", "reason": "Explosive Arrow RP, replaced by Bow Variants" }
+  ]
+}

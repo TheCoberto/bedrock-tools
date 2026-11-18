@@ -156,7 +156,7 @@ function Get-CleanName([string]$name) {
 # Every folder in the workspace that contains at least one pack.
 function Get-AddonRepos([string]$Workspace) {
   @(Get-ChildItem -LiteralPath $Workspace -Directory |
-    Where-Object { $_.Name -notin @('bedrock-tools', 'builds') -and $_.Name -notmatch '^\.' } |
+    Where-Object { $_.Name -notin @('bedrock-tools', 'builds', 'pack-backups') -and $_.Name -notmatch '^\.' } |
     Where-Object { @(Get-Packs $_.FullName).Count -gt 0 } |
     ForEach-Object { $_.FullName })
 }
