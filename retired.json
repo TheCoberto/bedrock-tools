@@ -3,6 +3,8 @@
   // Matched by header UUID. Add both the BP and the RP.
   "packs": [
     { "uuid": "a64109c4-5cc5-4dba-9cff-010643bed7d3", "reason": "Explosive Arrow BP, replaced by Bow Variants" },
-    { "uuid": "fa8b77ef-366a-4343-a0a6-0c4da898c31d", "reason": "Explosive Arrow RP, replaced by Bow Variants" }
+    { "uuid": "fa8b77ef-366a-4343-a0a6-0c4da898c31d", "reason": "Explosive Arrow RP, replaced by Bow Variants" },
+    { "uuid": "9db7b137-eaaa-4725-894a-397e2eaf38fe", "reason": "Soda BP, folded into Beverages" },
+    { "uuid": "5ee2602f-fb3d-402c-8f78-3711f5b69705", "reason": "Soda RP, folded into Beverages" }
   ]
 }
