@@ -111,7 +111,7 @@ One row per repo: uncommitted or unpushed work, open PRs, the latest release, pa
 Commit and merge the change first; this does the rest:
 
 1. Checks the repo is on its default branch, clean, and pushed, and pulls.
-2. Bumps the version on a `release-<version>` branch, opens a PR, waits for the checks and merges it.
+2. Bumps the version on a `release-<version>` branch and adds the notes to the add-on's `changelog.txt`/`.md` (in that file's style; an `Unreleased` heading is renamed to the version instead). Opens a PR, waits for the checks and merges it.
 3. Creates the GitHub release `v<version>`, titled `<Add-on name> <version>`.
 4. Waits for the release build, downloads the `.mcaddon` into `builds\` and removes older versions of that add-on.
 5. Runs `install.ps1`, unless Minecraft is running or you pass `-NoInstall`.

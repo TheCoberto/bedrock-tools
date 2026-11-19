@@ -4,7 +4,7 @@ TheCoberto's Minecraft Bedrock add-ons. Each add-on is its own GitHub repo next 
 
 ## Scripts (use these instead of doing the steps by hand)
 - `status.ps1`: one table of what needs doing across every repo (uncommitted, unpushed, open PRs, unreleased changes, builds, installed). Start here.
-- `release.ps1 -Repo <folder> -Part patch|minor|major -Notes "..."`: bump → PR → merge → GitHub release → download into builds → install. `-WhatIf` previews, `-NoBump` releases the current version.
+- `release.ps1 -Repo <folder> -Part patch|minor|major -Notes "..."`: bump → PR → merge → GitHub release → download into builds → install. `-WhatIf` previews, `-NoBump` releases the current version. Writes the notes into the add-on's changelog.
 - `install.ps1`: installs `builds\` into Minecraft. Needs Minecraft closed.
 - `check.ps1`, `package.ps1`, `build-all.ps1`, `bump.ps1`, `sync.ps1`: see README.md.
 
