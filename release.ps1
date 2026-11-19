@@ -6,8 +6,10 @@
 .DESCRIPTION
   1. Checks the repo is on its default branch with nothing uncommitted and
      nothing unpushed, and pulls the latest from GitHub.
-  2. Bumps the version on a release-<version> branch (bump.ps1), commits,
-     pushes and opens a PR. Skipped with -NoBump.
+  2. Bumps the version on a release-<version> branch (bump.ps1) and adds the
+     notes to the add-on's changelog (changelog.txt/.md, in its own style; an
+     "Unreleased" heading is renamed to the version instead). Commits, pushes
+     and opens a PR. Skipped with -NoBump.
   3. Waits for the PR's checks, then merges it with a merge commit.
   4. Creates the GitHub release v<version>, titled "<Add-on name> <version>".
   5. Waits for the release build, then downloads its .mcaddon into builds\,
@@ -104,6 +106,55 @@ function New-TextFile([string]$text) {
   return $f
 }
 
+# The add-on's changelog (changelog.txt or .md anywhere in the repo), or $null.
+function Find-Changelog {
+  Get-ChildItem -LiteralPath $Repo -Recurse -File |
+    Where-Object { $_.Name -match '^changelog\.(txt|md)$' -and $_.FullName -notmatch '\\\.git\\' } |
+    Sort-Object { $_.FullName.Length } | Select-Object -First 1
+}
+
+# Adds a "<version>" entry with the notes to the top of the changelog, in the
+# file's own style ("1.2.0" lines or "## 1.2.0" headings). An "Unreleased"
+# heading is renamed to the version instead, keeping its entries. Returns what
+# it did, or $null when there's nothing to do.
+function Update-Changelog([string]$file, [string]$ver, [string]$notes) {
+  $bytes = [IO.File]::ReadAllBytes($file)
+  $bom = $bytes.Length -ge 3 -and $bytes[0] -eq 0xEF -and $bytes[1] -eq 0xBB -and $bytes[2] -eq 0xBF
+  $text = (New-Object Text.UTF8Encoding($false)).GetString($bytes).TrimStart([char]0xFEFF)
+  $nl = if ($text.Contains("`r`n")) { "`r`n" } else { "`n" }
+  $lines = [Collections.Generic.List[string]]($text -split "\r?\n")
+  $markdown = [bool]($lines | Where-Object { $_ -match '^##\s+\S' })
+  $prefix = if ($markdown) { '## ' } else { '' }
+
+  if ($lines | Where-Object { $_ -match "^(##\s+)?v?$([regex]::Escape($ver))\s*$" }) { return $null }
+
+  $unreleased = -1
+  $firstVersion = -1
+  for ($i = 0; $i -lt $lines.Count; $i++) {
+    if ($unreleased -lt 0 -and $lines[$i] -match '^(##\s+)?unreleased\s*$') { $unreleased = $i }
+    if ($firstVersion -lt 0 -and $lines[$i] -match '^(##\s+)?v?\d+\.\d+\.\d+') { $firstVersion = $i }
+  }
+
+  if ($unreleased -ge 0 -and ($firstVersion -lt 0 -or $unreleased -lt $firstVersion)) {
+    $lines[$unreleased] = "$prefix$ver"
+    $did = "renamed Unreleased to $ver"
+  } else {
+    $entry = @("$prefix$ver")
+    if ($markdown) { $entry += '' }
+    $entry += @($notes.Trim() -split "\r?\n") + ''
+    $at = $firstVersion
+    if ($at -lt 0) {
+      # No versions yet: after a "# Changelog" title if there is one.
+      $at = 0
+      if ($lines.Count -and $lines[0] -match '^#\s') { $at = 1; while ($at -lt $lines.Count -and -not $lines[$at].Trim()) { $at++ } }
+    }
+    $lines.InsertRange($at, [string[]]$entry)
+    $did = "added $ver entry"
+  }
+  [IO.File]::WriteAllText($file, ($lines -join $nl), (New-Object Text.UTF8Encoding($bom)))
+  return $did
+}
+
 function Get-AddonInfo {
   $main = Get-MainPack @(Get-Packs $Repo)
   $name = Get-CleanName (Get-PackName $main)
@@ -135,7 +186,11 @@ if ((Get-ExitCode gh release view $tag -R $slug) -eq 0) { throw "$slug already h
 
 Write-Host "  $repoName ($slug): $current -> $new, release '$Title' on $default"
 if ($WhatIf) {
-  if (-not $NoBump) { Write-Host "  Would bump to $new on branch release-$new, open a PR, wait for checks and merge it." }
+  if (-not $NoBump) {
+    $changelog = Find-Changelog
+    $cl = if ($changelog) { "add the notes to $($changelog.FullName.Substring($Repo.Length + 1)) (or rename its Unreleased heading)" } else { 'no changelog file to update' }
+    Write-Host "  Would bump to $new on branch release-$new, $cl, open a PR, wait for checks and merge it."
+  }
   Write-Host "  Would create release $tag, wait for its build, download $($info.CleanName)-$new.mcaddon into builds\ (removing older versions) and $(if ($NoInstall) { 'not install it' } else { 'run install.ps1' })."
   exit 0
 }
@@ -146,6 +201,12 @@ if (-not $NoBump) {
   $bumpBranch = "release-$new"
   Run git checkout --quiet -b $bumpBranch | Out-Null
   & (Join-Path $PSScriptRoot 'bump.ps1') -Repo $Repo -Version $new | Out-Null
+  $changelog = Find-Changelog
+  if ($changelog) {
+    $did = Update-Changelog $changelog.FullName $new $Notes
+    $rel = $changelog.FullName.Substring($Repo.Length + 1)
+    Write-Host "  $rel`: $(if ($did) { $did } else { "already has $new" })"
+  } else { Write-Host '  No changelog file; skipped.' }
   $message = "Bump to $new"
   if ($CommitTrailer) { $message += "`n`n$CommitTrailer" }
   $msgFile = New-TextFile $message
