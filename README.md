@@ -11,7 +11,7 @@ C:\Repos\Mods\Minecraft Bedrock\
   ...
 ```
 
-In VS Code, open `C:\Repos\VS Code Workspaces\minecraft-bedrock-mod-suite.code-workspace` and use **Ctrl+Shift+P → Tasks: Run Task** to run any of these without typing commands. "This add-on" tasks use the add-on of the file you have open.
+In VS Code, open the `minecraft-bedrock-mod-suite.code-workspace` workspace and use **Ctrl+Shift+P → Tasks: Run Task** to run any of these without typing commands. "This add-on" tasks use the add-on of the file you have open.
 
 | Script | What it does |
 | --- | --- |
