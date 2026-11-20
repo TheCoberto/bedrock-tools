@@ -98,6 +98,35 @@ function Get-ExitCode {
   finally { Pop-Location; $ErrorActionPreference = $saved }
 }
 
+# The PR's checks as gh "buckets" (pass, fail, pending, skipping, cancel).
+# Empty while GitHub hasn't reported any checks yet.
+function Get-CheckBuckets([string]$branch) {
+  $saved = $ErrorActionPreference; $ErrorActionPreference = 'Continue'
+  Push-Location -LiteralPath $Repo
+  try { return @(& gh pr checks $branch --json bucket -q '.[].bucket' 2> $null | Where-Object { $_ }) }
+  finally { Pop-Location; $ErrorActionPreference = $saved }
+}
+
+# Waits until the PR's checks have all finished, and throws if any failed.
+# GitHub can take a few minutes to start checks, and `gh pr checks --watch`
+# fails straight away when there are none yet, so wait for them to appear first.
+# More checks can appear while watching (one run per workflow trigger), so look
+# again after each watch until nothing is pending.
+function Wait-Checks([string]$branch, [string]$pr) {
+  $deadline = (Get-Date).AddMinutes(5)
+  while (-not (Get-CheckBuckets $branch).Count) {
+    if ((Get-Date) -gt $deadline) { throw "No checks started on $pr within 5 minutes. Check GitHub Actions, merge the PR, then rerun with -NoBump." }
+    Start-Sleep -Seconds 5
+  }
+  Start-Sleep -Seconds 10 # let the other workflow runs register
+  while ($true) {
+    Get-ExitCode gh pr checks $branch --watch | Out-Null
+    $buckets = Get-CheckBuckets $branch
+    if ($buckets -contains 'fail' -or $buckets -contains 'cancel') { throw "Checks failed on $pr. Fix them, merge the PR, then rerun with -NoBump." }
+    if ($buckets -notcontains 'pending') { return }
+  }
+}
+
 # Text with quotes and newlines goes through a file: Windows PowerShell
 # mangles quotes in arguments to other programs.
 function New-TextFile([string]$text) {
@@ -220,9 +249,7 @@ if (-not $NoBump) {
   Write-Host "  $pr"
 
   Step 'Waiting for checks'
-  # gh exits 1 while no checks are reported yet; give them a minute to appear.
-  for ($i = 0; $i -lt 15 -and (Get-ExitCode gh pr checks $bumpBranch) -eq 1; $i++) { Start-Sleep -Seconds 4 }
-  if (Get-ExitCode gh pr checks $bumpBranch --watch) { throw "Checks failed on $pr. Fix them, merge the PR, then rerun with -NoBump." }
+  Wait-Checks $bumpBranch $pr
 
   Step 'Merging'
   Run gh pr merge $bumpBranch --merge --delete-branch | Out-Null
