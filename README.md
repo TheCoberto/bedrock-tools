@@ -20,6 +20,7 @@ In VS Code, open the `minecraft-bedrock-mod-suite.code-workspace` workspace and 
 | `build-all.ps1` | Checks and builds every add-on at once |
 | `install.ps1` | Installs everything in `builds` into Minecraft on this PC |
 | `status.ps1` | One table of what still needs doing across every add-on |
+| `promo.ps1` | Makes an add-on's promo banner and logo in the shared style |
 | `release.ps1` | Releases an add-on start to finish: bump, PR, merge, release, build, install |
 | `bump.ps1` | Updates an add-on's version everywhere |
 | `sync.ps1` | Copies shared files from another add-on (Skeleton Variants → Bow Variants) |
