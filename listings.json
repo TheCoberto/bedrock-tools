@@ -1,7 +1,7 @@
 {
   "_note": "Where each add-on is published. mcpedl: post URL. lootlabs: short link. download: file behind the LootLabs link. postedVersion: version last uploaded to MCPEDL.",
   "addons": [
-    { "repo": "CleanupUtility", "name": "Cleanup Utility", "mcpedl": "https://mcpedl.com/cleanup-function/", "lootlabs": "https://lootdest.org/s?u7Iu4P8R", "download": "https://drive.google.com/file/d/1mHp3LH33h9GZuQu2PKBdgfJPi2_pZvQx/view", "postedVersion": "1.0.0" },
+    { "repo": "world-cleanup", "name": "World Cleanup", "mcpedl": "https://mcpedl.com/cleanup-function/", "lootlabs": "https://lootdest.org/s?u7Iu4P8R", "download": "https://drive.google.com/file/d/1mHp3LH33h9GZuQu2PKBdgfJPi2_pZvQx/view", "postedVersion": "1.0.0" },
     { "repo": "beverages-minecraft-bedrock", "name": "Beverages", "mcpedl": "https://mcpedl.com/beverages/", "lootlabs": "https://loot-link.com/s?c8801109", "download": "https://drive.google.com/file/d/1178T_xvMLxXdruxi77wd7knY-Rq1tZxN/view", "postedVersion": "1.0.1" },
     { "repo": "skeleton-variants", "name": "Skeleton Variants", "mcpedl": "https://mcpedl.com/skeleton-variants/", "lootlabs": "https://loot-link.com/s?9f047d3c", "download": "https://drive.google.com/file/d/1_6QCgnKRTNNhCXSTIp-IHQhKCuCf08yu/view", "postedVersion": "1.0.1" },
     { "repo": "Day-Counter", "name": "Day Counter", "mcpedl": null, "lootlabs": "https://loot-link.com/s?ovT1", "download": "https://drive.google.com/file/d/1AEVkDvdN8zAIvT00xQN_jzngdrY_G05l/view", "postedVersion": null }
