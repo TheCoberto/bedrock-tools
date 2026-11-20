@@ -10,7 +10,7 @@
   The add-on that receives the files has a sync.json at its root:
 
     {
-      "source": "../stronger-skeletons",
+      "source": "../skeleton-variants",
       "packs": [
         {
           "from": "TheCoberto's Skeleton Variants/RP Skeleton Variants",

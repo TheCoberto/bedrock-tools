@@ -12,7 +12,7 @@
     powershell -ExecutionPolicy Bypass -File ..\bedrock-tools\package.ps1
 
     # A specific repo
-    powershell -ExecutionPolicy Bypass -File package.ps1 -Repo ..\stronger-skeletons
+    powershell -ExecutionPolicy Bypass -File package.ps1 -Repo ..\skeleton-variants
 
   Double-clicking a built file imports it into Minecraft. Importing an
   .mcaddon only adds the packs to the library; each world still chooses which
