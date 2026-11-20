@@ -9,7 +9,7 @@
     - Release:   the latest GitHub release
     - To do:     pack changes since that release, or a version that isn't released yet
     - Build:     whether builds\ has the current version's .mcaddon
-    - MCPEDL:    whether the MCPEDL post is on the latest release (from listings.json)
+    - CurseForge: whether the CurseForge project (synced to MCPEDL) is on the latest release (from listings.json)
   Then whether Minecraft has everything in builds\ installed.
 
   Promo images, READMEs and workflow files don't count as changes: builds leave
@@ -129,21 +129,22 @@ foreach ($row in $rows | Where-Object { -not $_.IsTools }) {
   }
 }
 
-# Is the MCPEDL post on the latest release? listings.json records the version last posted.
+# Is the CurseForge project (which syncs to MCPEDL) on the latest release? listings.json records the live version.
 $listingsFile = Join-Path $PSScriptRoot 'listings.json'
 $listings = if (Test-Path -LiteralPath $listingsFile) { @((Get-Content -LiteralPath $listingsFile -Raw | ConvertFrom-Json).addons) } else { @() }
 foreach ($row in $rows) {
-  $row | Add-Member -NotePropertyName Mcpedl -NotePropertyValue ''
-  $entry = $listings | Where-Object { $_.repo -eq $row.Name -and $_.mcpedl } | Select-Object -First 1
+  $row | Add-Member -NotePropertyName CurseForge -NotePropertyValue ''
+  $entry = $listings | Where-Object { $_.repo -eq $row.Name } | Select-Object -First 1
   if (-not $entry) { continue }
   $released = ($row.Release -replace ' \(pre\)$', '') -replace '^v', ''
-  $row.Mcpedl = if ($released -in @('?', 'none', '-')) { '-' }
-    elseif ($entry.postedVersion -eq $released) { 'ok' }
-    else { "posted $(if ($entry.postedVersion) { $entry.postedVersion } else { '?' }), latest $released" }
+  $row.CurseForge = if (-not $entry.liveVersion) { 'not uploaded' }
+    elseif ($released -in @('?', 'none', '-')) { '-' }
+    elseif ($entry.liveVersion -eq $released) { 'ok' }
+    else { "live $($entry.liveVersion), latest $released" }
 }
 
 $rows | Sort-Object { $_.IsTools }, Name |
-  Format-Table @{ n = 'Add-on'; e = { $_.Name } }, Local, PRs, Release, @{ n = 'To do'; e = { $_.Todo } }, Build, @{ n = 'MCPEDL'; e = { $_.Mcpedl } } -AutoSize |
+  Format-Table @{ n = 'Add-on'; e = { $_.Name } }, Local, PRs, Release, @{ n = 'To do'; e = { $_.Todo } }, Build, CurseForge -AutoSize |
   Out-String -Width 200 | Write-Host
 
 # Installed in Minecraft?
@@ -155,7 +156,7 @@ if ($installOk) { Write-Host 'Minecraft: everything in builds is installed.' -Fo
 else { Write-Host 'Minecraft: not up to date. Run install.ps1:' -ForegroundColor Yellow; $install | ForEach-Object { Write-Host "  $($_.Trim())" } }
 
 $needs = @($rows | Where-Object {
-  $_.Local -ne 'ok' -or ($_.PRs -notin @('0', '?')) -or ($_.Todo -notin @('', '-')) -or ($_.Build -notin @('', 'ok')) -or ($_.Mcpedl -notin @('', 'ok', '-'))
+  $_.Local -ne 'ok' -or ($_.PRs -notin @('0', '?')) -or ($_.Todo -notin @('', '-')) -or ($_.Build -notin @('', 'ok')) -or ($_.CurseForge -like 'live *')
 })
 if ($needs.Count -or -not $installOk) {
   Write-Host "Needs attention: $(@($needs.Name) -join ', ')" -ForegroundColor Yellow

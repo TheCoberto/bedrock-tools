@@ -99,11 +99,11 @@ Worlds that use an older version of an updated pack pick up the new one, because
 .\status.ps1 -NoFetch   # skip fetching from GitHub (faster)
 ```
 
-One row per repo: uncommitted or unpushed work, open PRs, the latest release, pack changes since that release, whether `builds\` has the current version, and whether the MCPEDL post is on the latest release. Then whether Minecraft has everything in `builds\` installed. Promo images, READMEs and workflow files don't count as changes. Exits with code 1 when something needs doing.
+One row per repo: uncommitted or unpushed work, open PRs, the latest release, pack changes since that release, whether `builds\` has the current version, and whether the CurseForge project is on the latest release. Then whether Minecraft has everything in `builds\` installed. Promo images, READMEs and workflow files don't count as changes. Exits with code 1 when something needs doing.
 
 ## listings.json
 
-Where each add-on is published: its MCPEDL post, LootLabs link, the Google Drive file behind that link, and `postedVersion` (the version last uploaded to MCPEDL). After updating an MCPEDL post, set `postedVersion` to the new version. The listing text for each post is in the add-on's `listing/mcpedl.md`.
+Where each add-on is published. Add-ons go up on CurseForge, which hosts the file and syncs the project to MCPEDL (MCPEDL posts can't be made or edited on MCPEDL any more). Each entry has the CurseForge slug (for an existing MCPEDL post it must match the post's URL so the project updates that post), the CurseForge and MCPEDL links once they exist, and `liveVersion`: the version players can download now. After an upload is approved, set `liveVersion` to it. The text to paste into CurseForge is in the add-on's `listing/curseforge.md`.
 
 ## release.ps1
 
