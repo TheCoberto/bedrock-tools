@@ -98,7 +98,11 @@ Worlds that use an older version of an updated pack pick up the new one, because
 .\status.ps1 -NoFetch   # skip fetching from GitHub (faster)
 ```
 
-One row per repo: uncommitted or unpushed work, open PRs, the latest release, pack changes since that release, and whether `builds\` has the current version. Then whether Minecraft has everything in `builds\` installed. Promo images, READMEs and workflow files don't count as changes. Exits with code 1 when something needs doing.
+One row per repo: uncommitted or unpushed work, open PRs, the latest release, pack changes since that release, whether `builds\` has the current version, and whether the MCPEDL post is on the latest release. Then whether Minecraft has everything in `builds\` installed. Promo images, READMEs and workflow files don't count as changes. Exits with code 1 when something needs doing.
+
+## listings.json
+
+Where each add-on is published: its MCPEDL post, LootLabs link, the Google Drive file behind that link, and `postedVersion` (the version last uploaded to MCPEDL). After updating an MCPEDL post, set `postedVersion` to the new version. The listing text for each post is in the add-on's `listing/mcpedl.md`.
 
 ## release.ps1
 
