@@ -8,7 +8,8 @@
     - PRs:       open pull requests
     - Release:   the latest GitHub release
     - To do:     pack changes since that release, a version that isn't released yet,
-                 or a CurseForge listing (listing\curseforge.md) or promo banner that's missing or behind
+                 a CurseForge listing (listing\curseforge.md) or promo banner that's missing or behind,
+                 or files shared with another add-on (sync.json) that have drifted apart
     - Build:     whether builds\ has the current version's .mcaddon
     - CurseForge: whether the CurseForge project (synced to MCPEDL) is on the latest release (from listings.json)
   Then whether Minecraft has everything in builds\ installed.
@@ -128,6 +129,12 @@ foreach ($row in $rows | Where-Object { -not $_.IsTools }) {
     $todo += "listing at $($matches[1])"
   }
   if (-not (Test-Path -LiteralPath (Join-Path $row.Repo 'promo\banner.png'))) { $todo += 'no promo' }
+
+  # Files shared with other add-ons (sync.json) that have drifted apart.
+  if (Test-Path -LiteralPath (Join-Path $row.Repo 'sync.json')) {
+    & powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'sync.ps1') -Repo $row.Repo -Check *> $null
+    if ($LASTEXITCODE -ne 0) { $todo += 'out of sync (run sync.ps1)' }
+  }
   $row.Todo = if ($todo) { $todo -join ', ' } else { '-' }
 
   if ($row.BuildName) {

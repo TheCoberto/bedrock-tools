@@ -27,9 +27,12 @@
     }
 
   - "files" are copied whole. A * or ? in the file name matches several files.
+    To copy a file to a different name, use { "from": "scripts/main.js", "to": "scripts/fat_man.js" }.
   - "json" entries copy only the listed keys from the object at "path" (dots for
     nested objects, like "a.b"). The file's other keys are left alone.
   - "lang" entries copy only the listed key=value lines.
+  - A pack entry can have its own "source" (like "../teams"), so one add-on can
+    receive files from several others. The top-level "source" is the default.
 
     # From inside the add-on that receives the files
     powershell -ExecutionPolicy Bypass -File ..\bedrock-tools\sync.ps1
@@ -54,9 +57,13 @@ $configPath = Join-Path $Repo 'sync.json'
 if (-not (Test-Path -LiteralPath $configPath)) { throw "No sync.json in $Repo." }
 $config = Read-JsonFile $configPath
 
-$sourceRepo = Join-Path $Repo $config.source
-if (-not (Test-Path -LiteralPath $sourceRepo)) { throw "The source add-on '$($config.source)' wasn't found next to this repo." }
-$sourceRepo = (Resolve-Path -LiteralPath $sourceRepo).Path
+# Each pack entry can name its own "source"; the top-level one is the default.
+function Resolve-Source([string]$source) {
+  if (-not $source) { throw 'sync.json needs a "source", at the top or on each pack entry.' }
+  $path = Join-Path $Repo $source
+  if (-not (Test-Path -LiteralPath $path)) { throw "The source add-on '$source' wasn't found next to this repo." }
+  return (Resolve-Path -LiteralPath $path).Path
+}
 
 $utf8 = New-Object System.Text.UTF8Encoding($false)
 $script:Differences = 0
@@ -140,7 +147,12 @@ function Get-JsonObject($root, [string]$path, [switch]$Create) {
 # --- Syncing ------------------------------------------------------------------------
 
 function Sync-Files($pack, [string]$fromDir, [string]$toDir) {
-  foreach ($pattern in @($pack.files)) {
+  foreach ($item in @($pack.files)) {
+    if (-not $item) { continue }
+    # A plain path keeps its name; { "from": "...", "to": "..." } copies one file to a different name.
+    $renameTo = $null
+    $pattern = $item
+    if ($item -isnot [string]) { $pattern = $item.from; $renameTo = $item.to }
     $relDir = Split-Path $pattern -Parent
     $leaf = Split-Path $pattern -Leaf
     $srcDir = Join-Path $fromDir $relDir
@@ -149,9 +161,10 @@ function Sync-Files($pack, [string]$fromDir, [string]$toDir) {
       $matches_ = @(Get-ChildItem -LiteralPath $srcDir -File | Where-Object { $_.Name -like $leaf })
     }
     if (-not $matches_.Count) { Write-Problem "$pattern isn't in the source pack."; continue }
+    if ($renameTo -and $matches_.Count -gt 1) { Write-Problem "$pattern matches several files, so it can't be copied to one name."; continue }
 
     foreach ($src in $matches_) {
-      $dest = Join-Path (Join-Path $toDir $relDir) $src.Name
+      $dest = if ($renameTo) { Join-Path $toDir $renameTo } else { Join-Path (Join-Path $toDir $relDir) $src.Name }
       $rel = Get-RelativePath $Repo $dest
       $srcBytes = [IO.File]::ReadAllBytes($src.FullName)
       if (Test-Path -LiteralPath $dest) {
@@ -243,8 +256,10 @@ function Sync-LangKeys($pack, [string]$fromDir, [string]$toDir) {
 }
 
 $name = Split-Path $Repo -Leaf
-Write-Host "$name <- $(Split-Path $sourceRepo -Leaf)"
 foreach ($pack in @($config.packs)) {
+  $source = if ($pack.PSObject.Properties['source']) { $pack.source } else { $config.source }
+  $sourceRepo = Resolve-Source $source
+  Write-Host "$name <- $(Split-Path $sourceRepo -Leaf) ($($pack.from) -> $($pack.to))"
   $fromDir = Join-Path $sourceRepo $pack.from
   $toDir = Join-Path $Repo $pack.to
   if (-not (Test-Path -LiteralPath $fromDir)) { Write-Problem "Source pack '$($pack.from)' wasn't found."; continue }
