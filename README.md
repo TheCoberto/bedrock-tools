@@ -23,7 +23,7 @@ In VS Code, open the `minecraft-bedrock-mod-suite.code-workspace` workspace and 
 | `promo.ps1` | Makes an add-on's promo banner and logo in the shared style |
 | `release.ps1` | Releases an add-on start to finish: bump, PR, merge, release, build, install |
 | `bump.ps1` | Updates an add-on's version everywhere |
-| `sync.ps1` | Copies shared files from another add-on (Skeleton Variants → Bow Variants) |
+| `sync.ps1` | Copies shared files between add-ons (bows, Fat Man, cleanup, teams, slot machine) |
 | `install-ci.ps1` | Adds the GitHub Actions workflow to add-on repos |
 
 From a terminal, run them with `powershell -ExecutionPolicy Bypass -File <script>`. Paths below are from inside an add-on repo.
@@ -147,6 +147,9 @@ For add-ons that share content with another one. Edit the shared files in the **
 - `files`: copied whole. `*` and `?` in the file name match several files.
 - `json`: copies only the listed keys of one object (like `texture_data` in `item_texture.json`). The add-on's other keys are left alone.
 - `lang`: copies only the listed `key=value` lines.
+- A pack entry can have its own `source`, so one add-on can receive files from several (see `coberto-utilities/sync.json`). A `files` entry like `{ "from": "scripts/main.js", "to": "scripts/fat_man.js" }` copies a file to a different name.
+
+`status.ps1` runs `sync.ps1 -Check` for every add-on with a `sync.json` and shows `out of sync` when shared files have drifted apart.
 
 It only rewrites a JSON file when a value differs, and line-ending differences don't count as changes. A missing source file or key is an error, so renames in the source don't go unnoticed. The source repo isn't available in GitHub Actions, so this runs locally only.
 
