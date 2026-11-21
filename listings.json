@@ -6,7 +6,7 @@
     { "repo": "coberto-arsenal", "name": "Coberto's Arsenal", "slug": "cobertos-arsenal", "curseforge": null, "mcpedl": null, "liveVersion": null },
     { "repo": "coberto-utilities", "name": "Coberto's Utilities", "slug": "cobertos-utilities", "curseforge": null, "mcpedl": null, "liveVersion": null },
     { "repo": "fat-man", "name": "Rocket Launcher", "slug": "rocket-launcher", "curseforge": null, "mcpedl": null, "liveVersion": null },
-    { "repo": "project-snow", "name": "Snowfall", "slug": "snowfall", "curseforge": null, "mcpedl": null, "liveVersion": null },
+    { "repo": "project-snow", "name": "Snowfall", "slug": "snowfall", "curseforge": "https://www.curseforge.com/minecraft-bedrock/addons/snowfall", "mcpedl": null, "liveVersion": null },
     { "repo": "sarcastic-vulgar-messages", "name": "Sarcastic Messages", "slug": "sarcastic-messages", "curseforge": null, "mcpedl": null, "liveVersion": null },
     { "repo": "Silk-Touch-Spawners", "name": "Silk Touch Spawners", "slug": "silk-touch-spawners", "curseforge": null, "mcpedl": null, "liveVersion": null },
     { "repo": "skeleton-variants", "name": "Skeleton Variants", "slug": "skeleton-variants", "curseforge": null, "mcpedl": "https://mcpedl.com/skeleton-variants/", "liveVersion": "1.0.1" },
