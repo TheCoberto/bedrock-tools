@@ -7,7 +7,8 @@
     - Local:     uncommitted files, commits not pushed, or behind GitHub
     - PRs:       open pull requests
     - Release:   the latest GitHub release
-    - To do:     pack changes since that release, or a version that isn't released yet
+    - To do:     pack changes since that release, a version that isn't released yet,
+                 or a CurseForge listing (listing\curseforge.md) or promo banner that's missing or behind
     - Build:     whether builds\ has the current version's .mcaddon
     - CurseForge: whether the CurseForge project (synced to MCPEDL) is on the latest release (from listings.json)
   Then whether Minecraft has everything in builds\ installed.
@@ -119,6 +120,14 @@ foreach ($row in $rows | Where-Object { -not $_.IsTools }) {
     } | Where-Object { $_ -notmatch '(^|/)(promo/|README|.*\.md$)' })
     if ($changed.Count) { $todo += "$($changed.Count) file(s) changed since $tag" }
   } elseif ($tag -eq 'none') { $todo += 'never released' }
+
+  # Listing text and promo images for CurseForge.
+  $listing = Join-Path $row.Repo 'listing\curseforge.md'
+  if (-not (Test-Path -LiteralPath $listing)) { $todo += 'no listing' }
+  elseif ($row.Version -and (Get-Content -LiteralPath $listing -Raw) -match '(?m)^- \*\*Display name:\*\* .+ (\d+\.\d+\.\d+)\s*$' -and $matches[1] -ne $row.Version) {
+    $todo += "listing at $($matches[1])"
+  }
+  if (-not (Test-Path -LiteralPath (Join-Path $row.Repo 'promo\banner.png'))) { $todo += 'no promo' }
   $row.Todo = if ($todo) { $todo -join ', ' } else { '-' }
 
   if ($row.BuildName) {
