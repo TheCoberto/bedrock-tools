@@ -15,6 +15,6 @@
     { "repo": "transfer-player", "name": "Transfer Player", "slug": "transfer-player", "curseforge": null, "mcpedl": null, "liveVersion": null },
     { "repo": "whispers-of-the-void", "name": "Whispers of the Void", "slug": "whispers-of-the-void", "curseforge": null, "mcpedl": null, "liveVersion": null },
     { "repo": "world-cleanup", "name": "World Cleanup", "slug": "cleanup-function", "curseforge": "https://www.curseforge.com/minecraft-bedrock/addons/cleanup-function", "mcpedl": "https://mcpedl.com/cleanup-function/", "liveVersion": "1.0.0" },
-    { "repo": "zoom", "name": "Zoom", "slug": "zoom", "curseforge": null, "mcpedl": null, "liveVersion": null }
+    { "repo": "zoom", "name": "Zoom", "slug": "zoom", "curseforge": "https://www.curseforge.com/minecraft-bedrock/addons/zoom", "mcpedl": null, "liveVersion": null }
   ]
 }
