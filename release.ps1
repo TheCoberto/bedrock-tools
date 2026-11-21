@@ -8,7 +8,8 @@
      nothing unpushed, and pulls the latest from GitHub.
   2. Bumps the version on a release-<version> branch (bump.ps1) and adds the
      notes to the add-on's changelog (changelog.txt/.md, in its own style; an
-     "Unreleased" heading is renamed to the version instead). Commits, pushes
+     "Unreleased" heading is renamed to the version instead) and to
+     listing\curseforge.md (changelog and File section). Commits, pushes
      and opens a PR. Skipped with -NoBump.
   3. Waits for the PR's checks, then merges it with a merge commit.
   4. Creates the GitHub release v<version>, titled "<Add-on name> <version>".
@@ -184,6 +185,31 @@ function Update-Changelog([string]$file, [string]$ver, [string]$notes) {
   return $did
 }
 
+# Brings listing\curseforge.md up to the new version: adds a changelog entry at
+# the top of its Changelog section and points the File section at the new
+# build, with the notes as its changelog. Returns what it did, or $null.
+function Update-Listing([string]$file, [string]$ver, [string]$notes) {
+  if (-not (Test-Path -LiteralPath $file)) { return $null }
+  $text = [IO.File]::ReadAllText($file)
+  $nl = if ($text.Contains("`r`n")) { "`r`n" } else { "`n" }
+  $body = ($notes.Trim() -split "\r?\n") -join $nl
+  $did = @()
+
+  if ($text -notmatch "(?m)^\*\*$([regex]::Escape($ver))\*\*\s*$") {
+    $text = [regex]::Replace($text, '(?m)^(### Changelog\r?\n\r?\n)', { param($m) $m.Groups[1].Value + "**$ver**$nl$body$nl$nl" }, 1)
+    $did += 'changelog'
+  }
+  # File section: build name, display name and the file's changelog (everything after "- **Changelog:**").
+  $file2 = [regex]::Replace($text, '(?m)^(- \*\*File:\*\* `builds\\.+?-)\d+\.\d+\.\d+(\.mcaddon`)', "`${1}$ver`${2}")
+  $file2 = [regex]::Replace($file2, '(?m)^(- \*\*Display name:\*\* .+ )\d+\.\d+\.\d+\s*$', "`${1}$ver")
+  $file2 = [regex]::Replace($file2, '(?s)(- \*\*Changelog:\*\*\r?\n\r?\n).*$', { param($m) $m.Groups[1].Value + $body + $nl })
+  if ($file2 -ne $text) { $text = $file2; $did += 'file section' }
+
+  if (-not $did) { return $null }
+  [IO.File]::WriteAllText($file, $text, (New-Object Text.UTF8Encoding($false)))
+  return "updated $($did -join ' and ')"
+}
+
 function Get-AddonInfo {
   $main = Get-MainPack @(Get-Packs $Repo)
   $name = Get-CleanName (Get-PackName $main)
@@ -218,6 +244,7 @@ if ($WhatIf) {
   if (-not $NoBump) {
     $changelog = Find-Changelog
     $cl = if ($changelog) { "add the notes to $($changelog.FullName.Substring($Repo.Length + 1)) (or rename its Unreleased heading)" } else { 'no changelog file to update' }
+    if (Test-Path -LiteralPath (Join-Path $Repo 'listing\curseforge.md')) { $cl += ', update listing\curseforge.md' }
     Write-Host "  Would bump to $new on branch release-$new, $cl, open a PR, wait for checks and merge it."
   }
   Write-Host "  Would create release $tag, wait for its build, download $($info.CleanName)-$new.mcaddon into builds\ (removing older versions) and $(if ($NoInstall) { 'not install it' } else { 'run install.ps1' })."
@@ -236,6 +263,11 @@ if (-not $NoBump) {
     $rel = $changelog.FullName.Substring($Repo.Length + 1)
     Write-Host "  $rel`: $(if ($did) { $did } else { "already has $new" })"
   } else { Write-Host '  No changelog file; skipped.' }
+  $listing = Join-Path $Repo 'listing\curseforge.md'
+  if (Test-Path -LiteralPath $listing) {
+    $did = Update-Listing $listing $new $Notes
+    Write-Host "  listing\curseforge.md: $(if ($did) { $did } else { "already has $new" })"
+  }
   $message = "Bump to $new"
   if ($CommitTrailer) { $message += "`n`n$CommitTrailer" }
   $msgFile = New-TextFile $message

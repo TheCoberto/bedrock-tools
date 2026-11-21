@@ -99,7 +99,7 @@ Worlds that use an older version of an updated pack pick up the new one, because
 .\status.ps1 -NoFetch   # skip fetching from GitHub (faster)
 ```
 
-One row per repo: uncommitted or unpushed work, open PRs, the latest release, pack changes since that release, whether `builds\` has the current version, and whether the CurseForge project is on the latest release. Then whether Minecraft has everything in `builds\` installed. Promo images, READMEs and workflow files don't count as changes. Exits with code 1 when something needs doing.
+One row per repo: uncommitted or unpushed work, open PRs, the latest release, pack changes since that release (and a CurseForge listing or promo banner that's missing or behind), whether `builds\` has the current version, and whether the CurseForge project is on the latest release. Then whether Minecraft has everything in `builds\` installed. Promo images, READMEs and workflow files don't count as changes. Exits with code 1 when something needs doing.
 
 ## listings.json
 
@@ -116,7 +116,7 @@ Where each add-on is published. Add-ons go up on CurseForge, which hosts the fil
 Commit and merge the change first; this does the rest:
 
 1. Checks the repo is on its default branch, clean, and pushed, and pulls.
-2. Bumps the version on a `release-<version>` branch and adds the notes to the add-on's `changelog.txt`/`.md` (in that file's style; an `Unreleased` heading is renamed to the version instead). Opens a PR, waits for the checks and merges it.
+2. Bumps the version on a `release-<version>` branch and adds the notes to the add-on's `changelog.txt`/`.md` (in that file's style; an `Unreleased` heading is renamed to the version instead), and to `listing/curseforge.md` (its changelog and File section). Opens a PR, waits for the checks and merges it.
 3. Creates the GitHub release `v<version>`, titled `<Add-on name> <version>`.
 4. Waits for the release build, downloads the `.mcaddon` into `builds\` and removes older versions of that add-on.
 5. Runs `install.ps1`, unless Minecraft is running or you pass `-NoInstall`.
