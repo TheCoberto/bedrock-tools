@@ -11,6 +11,7 @@
     - Packs that aren't installed yet go into development_behavior_packs and
       development_resource_packs.
     - Every replaced or removed pack is backed up first, to <Workspace>\pack-backups.
+      Only the newest 5 backups are kept (change it with -KeepBackups).
     - Packs listed in retired.json (add-ons that were replaced by another one)
       are removed.
     - If builds holds several versions of an add-on, only the newest is used.
@@ -35,6 +36,9 @@
 .PARAMETER WhatIf
   Show what would change without changing anything.
 
+.PARAMETER KeepBackups
+  How many backup folders in pack-backups to keep. Older ones are deleted after an install.
+
 .PARAMETER Force
   Install even while Minecraft is running. It won't see the changes until it restarts.
 #>
@@ -43,7 +47,8 @@ param(
   [string]$BuildsDir,
   [string]$MinecraftDir,
   [switch]$WhatIf,
-  [switch]$Force
+  [switch]$Force,
+  [int]$KeepBackups = 5
 )
 
 $ErrorActionPreference = 'Stop'
@@ -185,5 +190,13 @@ $summary = "$($counts.replaced) updated, $($counts.installed) installed, $($coun
 if ($WhatIf) { Write-Host "Would change: $summary (nothing was changed)" -ForegroundColor Yellow; exit 0 }
 Write-Host $summary -ForegroundColor Green
 if (Test-Path -LiteralPath $backupDir) { Write-Host "Old copies are in $backupDir" }
+
+# Keep only the newest backups.
+$old = @(Get-ChildItem -LiteralPath (Join-Path $Workspace 'pack-backups') -Directory -ErrorAction SilentlyContinue |
+  Where-Object { $_.Name -match '^\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}$' } | Sort-Object Name -Descending | Select-Object -Skip $KeepBackups)
+if ($old.Count) {
+  $old | ForEach-Object { Remove-Item -LiteralPath $_.FullName -Recurse -Force }
+  Write-Host "Deleted $($old.Count) older backup(s), keeping the newest $KeepBackups."
+}
 if ($running.Count) { Write-Host 'Restart Minecraft to load the changes.' -ForegroundColor Yellow }
 exit 0
