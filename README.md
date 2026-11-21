@@ -43,7 +43,7 @@ From a terminal, run them with `powershell -ExecutionPolicy Bypass -File <script
 - A pack depends on another pack in the repo at the wrong version.
 - With `-All`: two add-ons share a pack UUID, so Minecraft treats them as the same pack.
 
-**Warnings:** the version in the pack name doesn't match `header.version`; a Script API dependency with no script module; with `-All`, two add-ons share a module UUID.
+**Warnings:** the version in the pack name doesn't match `header.version`; a Script API dependency with no script module; a beta Script API version (players need the Beta APIs experiment, and it breaks with each Minecraft update until bumped), or a listing that doesn't mention the experiment; with `-All`, two add-ons share a module UUID.
 
 It exits with code 1 when there are errors, so GitHub Actions marks the run as failed.
 
@@ -84,7 +84,7 @@ Installs every add-on in `builds\` into Minecraft Bedrock on this PC, like doubl
 - Each pack **replaces** the installed pack with the same UUID, in the same folder, instead of being added next to it. New packs go into `development_behavior_packs` and `development_resource_packs`.
 - Packs that already match the build are left alone. Line endings don't count, so a GitHub build and a local build of the same code match.
 - If `builds\` holds several versions of an add-on, only the newest is installed.
-- Every replaced or removed pack is backed up to `pack-backups\<date>` next to the repos.
+- Every replaced or removed pack is backed up to `pack-backups\<date>` next to the repos. Only the newest 5 backups are kept (`-KeepBackups` changes that).
 - Packs listed in `retired.json` are removed. List an add-on there when another one replaces it (Explosive Arrow → Bow Variants). Add both its BP and RP UUIDs.
 - Packs that aren't in `builds\` or `retired.json` are never touched.
 

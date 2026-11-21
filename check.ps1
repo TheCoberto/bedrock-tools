@@ -12,6 +12,8 @@
   Warnings:
     - the version in the pack name doesn't match header.version
     - a Script API dependency with no script module
+    - a beta Script API version (needs the Beta APIs experiment and breaks with Minecraft updates),
+      or a listing\curseforge.md that doesn't mention the experiment
     - with -All: two add-ons share a module UUID (two add-ons sharing a PACK UUID is an error)
 
   Exits with code 1 if anything has an error, so GitHub Actions marks the run as failed.

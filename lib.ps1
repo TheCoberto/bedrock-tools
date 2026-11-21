@@ -187,6 +187,7 @@ function Get-AddonIssues([string]$Repo) {
   if ($packs.Count -eq 0) { [void]$issues.Add((New-Issue Error '' 'No packs found (no manifest.json).')); return $issues }
 
   $declared = @{}   # uuid -> list of "where (kind)"
+  $usesBeta = $false
   foreach ($pack in $packs) {
     $where = Get-RelativePath $Repo $pack.Path
     if ($pack.Error) { [void]$issues.Add((New-Issue Error $where "manifest.json doesn't parse: $($pack.Error)")); continue }
@@ -230,6 +231,18 @@ function Get-AddonIssues([string]$Repo) {
     if ($apiDeps.Count -gt 0 -and $scriptModules.Count -eq 0) {
       [void]$issues.Add((New-Issue Warning $where 'Depends on the Script API but has no script module. The dependency can be removed.'))
     }
+    $betaDeps = @($apiDeps | Where-Object { [string]$_.version -match 'beta' })
+    if ($betaDeps.Count -gt 0) {
+      $list = ($betaDeps | ForEach-Object { "$($_.module_name) $($_.version)" }) -join ', '
+      [void]$issues.Add((New-Issue Warning $where "Uses beta Script APIs ($list). Players need the Beta APIs experiment, and the add-on stops working after a Minecraft update until these versions are bumped (see the beta tag on npm)."))
+      $usesBeta = $true
+    }
+  }
+
+  # A listing for an add-on on beta APIs has to tell players to turn on the experiment.
+  $listing = Join-Path (Join-Path $Repo 'listing') 'curseforge.md'
+  if ($usesBeta -and (Test-Path -LiteralPath $listing) -and (Get-Content -LiteralPath $listing -Raw) -notmatch 'Beta APIs') {
+    [void]$issues.Add((New-Issue Warning 'listing/curseforge.md' "Doesn't mention the Beta APIs experiment, which this add-on needs."))
   }
 
   # Dependencies on other packs in this repo must match their version.
