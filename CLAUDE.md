@@ -11,6 +11,7 @@ TheCoberto's Minecraft Bedrock add-ons. Each add-on is its own GitHub repo next 
 ## Conventions
 - Never commit to the default branch. Branch, push, open a PR, wait for checks, merge with a merge commit (`gh pr merge --merge --delete-branch`). world-cleanup's default branch is `master`; the rest use `main`.
 - Changes to promo images, READMEs or workflows don't need a release. Pack changes do: bump the version (`release.ps1` does it).
+- Every add-on keeps its changelog in `CHANGELOG.md` at the top of its repo, with `## <version>` headings; `release.ps1` adds to it.
 - Release title: `<Add-on name> <version>` (like "Rocket Launcher 1.3.0"). Notes: short player-facing bullets, no PR lists.
 - `builds\` holds only the latest release of each add-on, named like `Rocket-Launcher-1.3.0.mcaddon`.
 - When an add-on is folded into or replaced by another, add its BP and RP header UUIDs to `retired.json` (after checking no world uses them), remove its build, and run `install.ps1`.

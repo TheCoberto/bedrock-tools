@@ -7,7 +7,7 @@
   1. Checks the repo is on its default branch with nothing uncommitted and
      nothing unpushed, and pulls the latest from GitHub.
   2. Bumps the version on a release-<version> branch (bump.ps1) and adds the
-     notes to the add-on's changelog (changelog.txt/.md, in its own style; an
+     notes to the add-on's CHANGELOG.md (created if missing; an
      "Unreleased" heading is renamed to the version instead) and to
      listing\curseforge.md (changelog and File section). Commits, pushes
      and opens a PR. Skipped with -NoBump.
@@ -136,24 +136,23 @@ function New-TextFile([string]$text) {
   return $f
 }
 
-# The add-on's changelog (changelog.txt or .md anywhere in the repo), or $null.
-function Find-Changelog {
-  Get-ChildItem -LiteralPath $Repo -Recurse -File |
-    Where-Object { $_.Name -match '^changelog\.(txt|md)$' -and $_.FullName -notmatch '\\\.git\\' } |
-    Sort-Object { $_.FullName.Length } | Select-Object -First 1
-}
+# The add-on's changelog: CHANGELOG.md at the top of the repo (created on the first release if missing).
+function Find-Changelog { Join-Path $Repo 'CHANGELOG.md' }
 
 # Adds a "<version>" entry with the notes to the top of the changelog, in the
 # file's own style ("1.2.0" lines or "## 1.2.0" headings). An "Unreleased"
 # heading is renamed to the version instead, keeping its entries. Returns what
 # it did, or $null when there's nothing to do.
 function Update-Changelog([string]$file, [string]$ver, [string]$notes) {
+  if (-not (Test-Path -LiteralPath $file)) { [IO.File]::WriteAllText($file, "# Changelog`n", (New-Object Text.UTF8Encoding($false))) }
   $bytes = [IO.File]::ReadAllBytes($file)
   $bom = $bytes.Length -ge 3 -and $bytes[0] -eq 0xEF -and $bytes[1] -eq 0xBB -and $bytes[2] -eq 0xBF
   $text = (New-Object Text.UTF8Encoding($false)).GetString($bytes).TrimStart([char]0xFEFF)
   $nl = if ($text.Contains("`r`n")) { "`r`n" } else { "`n" }
   $lines = [Collections.Generic.List[string]]($text -split "\r?\n")
-  $markdown = [bool]($lines | Where-Object { $_ -match '^##\s+\S' })
+  # "## 1.2.0" headings in a .md file unless it already uses plain "1.2.0" lines.
+  $markdown = [bool]($lines | Where-Object { $_ -match '^##\s+\S' }) -or
+    ($file -like '*.md' -and -not ($lines | Where-Object { $_ -match '^v?\d+\.\d+\.\d+\s*$' }))
   $prefix = if ($markdown) { '## ' } else { '' }
 
   if ($lines | Where-Object { $_ -match "^(##\s+)?v?$([regex]::Escape($ver))\s*$" }) { return $null }
@@ -242,8 +241,7 @@ if ((Get-ExitCode gh release view $tag -R $slug) -eq 0) { throw "$slug already h
 Write-Host "  $repoName ($slug): $current -> $new, release '$Title' on $default"
 if ($WhatIf) {
   if (-not $NoBump) {
-    $changelog = Find-Changelog
-    $cl = if ($changelog) { "add the notes to $($changelog.FullName.Substring($Repo.Length + 1)) (or rename its Unreleased heading)" } else { 'no changelog file to update' }
+    $cl = if (Test-Path -LiteralPath (Find-Changelog)) { 'add the notes to CHANGELOG.md (or rename its Unreleased heading)' } else { 'create CHANGELOG.md with the notes' }
     if (Test-Path -LiteralPath (Join-Path $Repo 'listing\curseforge.md')) { $cl += ', update listing\curseforge.md' }
     Write-Host "  Would bump to $new on branch release-$new, $cl, open a PR, wait for checks and merge it."
   }
@@ -257,12 +255,9 @@ if (-not $NoBump) {
   $bumpBranch = "release-$new"
   Run git checkout --quiet -b $bumpBranch | Out-Null
   & (Join-Path $PSScriptRoot 'bump.ps1') -Repo $Repo -Version $new | Out-Null
-  $changelog = Find-Changelog
-  if ($changelog) {
-    $did = Update-Changelog $changelog.FullName $new $Notes
-    $rel = $changelog.FullName.Substring($Repo.Length + 1)
-    Write-Host "  $rel`: $(if ($did) { $did } else { "already has $new" })"
-  } else { Write-Host '  No changelog file; skipped.' }
+  $did = Update-Changelog (Find-Changelog) $new $Notes
+  Run git add -- CHANGELOG.md | Out-Null
+  Write-Host "  CHANGELOG.md: $(if ($did) { $did } else { "already has $new" })"
   $listing = Join-Path $Repo 'listing\curseforge.md'
   if (Test-Path -LiteralPath $listing) {
     $did = Update-Listing $listing $new $Notes
