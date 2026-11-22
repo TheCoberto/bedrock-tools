@@ -103,7 +103,13 @@ Write-Host "Packaging $name $version ($($packs.Count) packs) into $OutDir"
 
 # .mcaddon: each pack FOLDER sits at the root of the zip.
 $all = @{}
-foreach ($p in $packs) { $all[(Split-Path $p.Dir -Leaf)] = $p.Dir }
+foreach ($p in $packs) {
+  # A pack at the top of the repo is named after the pack, not the repo folder
+  # (which is "addon" in the GitHub build).
+  $atRoot = $p.Dir.TrimEnd('\', '/') -eq $Repo.TrimEnd('\', '/')
+  $folder = if ($atRoot) { Get-CleanName (Get-PackName $p) } else { Split-Path $p.Dir -Leaf }
+  $all[$folder] = $p.Dir
+}
 New-PackArchive -Sources $all -OutName "$name-$version.mcaddon"
 
 # .mcpack: the pack's CONTENTS sit at the root of the zip (manifest.json at top level).
