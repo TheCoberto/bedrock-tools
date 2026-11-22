@@ -23,7 +23,7 @@ In VS Code, open the `minecraft-bedrock-mod-suite.code-workspace` workspace and 
 | `promo.ps1` | Makes an add-on's promo banner and logo in the shared style |
 | `release.ps1` | Releases an add-on start to finish: bump, PR, merge, release, build, install |
 | `bump.ps1` | Updates an add-on's version everywhere |
-| `sync.ps1` | Copies shared files between add-ons (bows, Fat Man, cleanup, teams, slot machine) |
+| `sync.ps1` | Copies shared files between add-ons (bows, Fat Man, cleanup, teams, Mystical Slots, transfer) |
 | `install-ci.ps1` | Adds the GitHub Actions workflow to add-on repos |
 
 From a terminal, run them with `powershell -ExecutionPolicy Bypass -File <script>`. Paths below are from inside an add-on repo.
