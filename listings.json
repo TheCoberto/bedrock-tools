@@ -1,7 +1,7 @@
 {
   "_note": "Each add-on's CurseForge project (which syncs to MCPEDL). slug: the CurseForge slug; for existing MCPEDL posts it must match the post's URL. curseforge/mcpedl: project and post URLs once they exist. liveVersion: the version players can download there now.",
   "addons": [
-    { "repo": "beverages-minecraft-bedrock", "name": "Beverages", "slug": "beverages", "curseforge": "https://www.curseforge.com/minecraft-bedrock/addons/beverages", "mcpedl": "https://mcpedl.com/beverages/", "liveVersion": "1.0.1" },
+    { "repo": "beverages-minecraft-bedrock", "name": "Beverages", "slug": "beverages", "curseforge": "https://www.curseforge.com/minecraft-bedrock/addons/beverages", "mcpedl": "https://mcpedl.com/beverages/", "liveVersion": "1.0.4" },
     { "repo": "bow-variants", "name": "Bow Variants", "slug": "bow-variants", "curseforge": null, "mcpedl": null, "liveVersion": null },
     { "repo": "coberto-arsenal", "name": "Coberto's Arsenal", "slug": "cobertos-arsenal", "curseforge": null, "mcpedl": null, "liveVersion": null },
     { "repo": "coberto-utilities", "name": "Coberto's Utilities", "slug": "cobertos-utilities", "curseforge": null, "mcpedl": null, "liveVersion": null },
@@ -9,7 +9,7 @@
     { "repo": "project-snow", "name": "Snowfall", "slug": "snowfall", "curseforge": "https://www.curseforge.com/minecraft-bedrock/addons/snowfall", "mcpedl": null, "liveVersion": null },
     { "repo": "sarcastic-vulgar-messages", "name": "Sarcastic Messages", "slug": "sarcastic-messages", "curseforge": null, "mcpedl": null, "liveVersion": null },
     { "repo": "silk-touch-spawners", "name": "Silk Touch Spawners", "slug": "silk-touch-spawners", "curseforge": null, "mcpedl": null, "liveVersion": null },
-    { "repo": "skeleton-variants", "name": "Skeleton Variants", "slug": "skeleton-variants", "curseforge": "https://www.curseforge.com/minecraft-bedrock/addons/skeleton-variants", "mcpedl": "https://mcpedl.com/skeleton-variants/", "liveVersion": "1.0.1" },
+    { "repo": "skeleton-variants", "name": "Skeleton Variants", "slug": "skeleton-variants", "curseforge": "https://www.curseforge.com/minecraft-bedrock/addons/skeleton-variants", "mcpedl": "https://mcpedl.com/skeleton-variants/", "liveVersion": "1.0.4" },
     { "repo": "mystical-slots", "name": "Mystical Slots", "slug": "mystical-slots", "curseforge": null, "mcpedl": null, "liveVersion": null },
     { "repo": "teams", "name": "Teams", "slug": "teams", "curseforge": null, "mcpedl": null, "liveVersion": null },
     { "repo": "transfer-player", "name": "Transfer Player", "slug": "transfer-player", "curseforge": null, "mcpedl": null, "liveVersion": null },
