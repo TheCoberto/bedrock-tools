@@ -15,6 +15,6 @@ TheCoberto's Minecraft Bedrock add-ons. Each add-on is its own GitHub repo next 
 - Release title: `<Add-on name> <version>` (like "Rocket Launcher 1.3.0"). Notes: short player-facing bullets, no PR lists.
 - `builds\` holds only the latest release of each add-on, named like `Rocket-Launcher-1.3.0.mcaddon`.
 - When an add-on is folded into or replaced by another, add its BP and RP header UUIDs to `retired.json` (after checking no world uses them), remove its build, and run `install.ps1`.
-- Shared files are edited in their source add-on and copied with `sync.ps1` (each receiving add-on has a `sync.json`): bows from skeleton-variants to bow-variants and coberto-arsenal; Fat Man from fat-man to coberto-arsenal; cleanup, teams and slot machine from world-cleanup, teams and slot-machine to coberto-utilities.
+- Shared files are edited in their source add-on and copied with `sync.ps1` (each receiving add-on has a `sync.json`): bows from skeleton-variants to bow-variants and coberto-arsenal; Fat Man from fat-man to coberto-arsenal; cleanup, teams, slot machine and transfer from world-cleanup, teams, slot-machine and transfer-player to coberto-utilities.
 - Other Claude sessions may be working in these repos at the same time. Branch from an up-to-date default branch and check `git log` before assuming a commit is yours.
 - Minecraft data: `%APPDATA%\Minecraft Bedrock\Users\Shared\games\com.mojang` (packs), `...\Users\<id>\games\com.mojang\minecraftWorlds` (worlds).
