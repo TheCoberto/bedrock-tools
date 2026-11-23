@@ -95,7 +95,8 @@ try {
   [IO.File]::WriteAllText($queryFile, "{ $($parts -join ' ') }")
   $ErrorActionPreference = 'Continue'
   $json = & gh api graphql -F "query=@$queryFile" 2>$null
-  if ($LASTEXITCODE -eq 0) { $github = ($json -join "`n" | ConvertFrom-Json).data }
+  # A repo that isn't on GitHub makes gh exit with an error, but the answer still has every other repo.
+  if ($json) { $github = ($json -join "`n" | ConvertFrom-Json).data }
 } catch {} finally { $ErrorActionPreference = 'Stop'; Remove-Item -LiteralPath $queryFile -ErrorAction SilentlyContinue }
 if (-not $github) { Write-Host 'Could not reach GitHub; PRs and releases are unknown.' -ForegroundColor Yellow }
 
