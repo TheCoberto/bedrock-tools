@@ -5,6 +5,12 @@
     { "uuid": "a64109c4-5cc5-4dba-9cff-010643bed7d3", "reason": "Explosive Arrow BP, replaced by Bow Variants" },
     { "uuid": "fa8b77ef-366a-4343-a0a6-0c4da898c31d", "reason": "Explosive Arrow RP, replaced by Bow Variants" },
     { "uuid": "9db7b137-eaaa-4725-894a-397e2eaf38fe", "reason": "Soda BP, folded into Beverages" },
-    { "uuid": "5ee2602f-fb3d-402c-8f78-3711f5b69705", "reason": "Soda RP, folded into Beverages" }
+    { "uuid": "5ee2602f-fb3d-402c-8f78-3711f5b69705", "reason": "Soda RP, folded into Beverages" },
+    { "uuid": "021a26d5-b4f2-4263-bb8a-80a9d85e6e51", "reason": "From The Forest BP, no longer used" },
+    { "uuid": "0429ab35-e592-4bd1-8c6a-5ff4c91c8d1d", "reason": "From The Forest RP, no longer used" },
+    { "uuid": "40d18d86-f454-4361-bbcf-b118274dec17", "reason": "Better on Bedrock BP, no longer used" },
+    { "uuid": "e0992d5f-e7d3-4260-abba-2da0d6015c05", "reason": "Better on Bedrock RP, no longer used" },
+    { "uuid": "10001000-0b11-1111-1111-a000a000a000", "reason": "Nico's Mobs BP, no longer used" },
+    { "uuid": "20002000-0b11-2222-2222-b000b000b000", "reason": "Nico's Mobs RP, no longer used" }
   ]
 }
