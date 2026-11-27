@@ -22,7 +22,8 @@ param(
   [string]$Accent = '#9ff0ff',
   [string[]]$Icons = @(),
   [ValidateSet('', 'eyes', 'bubble')][string]$Art = '',
-  [string]$LogoTitle
+  [string]$LogoTitle,
+  [string]$BubbleText = '#@$%!'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -115,7 +116,7 @@ function Draw-Art($g, [single]$cx, [single]$cy, [single]$size) {
     $font = New-Object System.Drawing.Font 'Arial Black', ($size * 0.17), ([System.Drawing.GraphicsUnit]::Pixel)
     $fmt = New-Object System.Drawing.StringFormat; $fmt.Alignment = 'Center'; $fmt.LineAlignment = 'Center'
     $fmt.FormatFlags = 'NoWrap'
-    $g.DrawString('#@$%!', $font, (New-Object System.Drawing.SolidBrush (Get-Color $Top)), (New-Object System.Drawing.RectangleF ([single]$x), ([single]$y), ([single]$w), ([single]$h)), $fmt)
+    $g.DrawString($BubbleText,$font, (New-Object System.Drawing.SolidBrush (Get-Color $Top)), (New-Object System.Drawing.RectangleF ([single]$x), ([single]$y), ([single]$w), ([single]$h)), $fmt)
   }
 }
 
